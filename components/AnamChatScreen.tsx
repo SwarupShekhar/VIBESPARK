@@ -60,9 +60,35 @@ export const AnamChatScreen: React.FC<AnamChatScreenProps> = ({ onNavigate }) =>
                 playThroughEarpieceAndroid: false,
             });
 
-            console.log('Starting recording..');
+            // Explicit recording options for better compatibility
+            const recordingOptions: any = {
+                android: {
+                    extension: '.m4a',
+                    outputFormat: Audio.AndroidOutputFormat.MPEG_4,
+                    audioEncoder: Audio.AndroidAudioEncoder.AAC,
+                    sampleRate: 44100,
+                    numberOfChannels: 2,
+                    bitRate: 128000,
+                },
+                ios: {
+                    extension: '.m4a',
+                    audioQuality: Audio.IOSAudioQuality.HIGH,
+                    sampleRate: 44100,
+                    numberOfChannels: 2,
+                    bitRate: 128000,
+                    linearPCMBitDepth: 16,
+                    linearPCMIsBigEndian: false,
+                    linearPCMIsFloat: false,
+                },
+                web: {
+                    mimeType: 'audio/webm',
+                    bitsPerSecond: 128000,
+                },
+            };
+
+            console.log('Starting recording with custom options..');
             const { recording: newRecording } = await Audio.Recording.createAsync(
-                Audio.RecordingOptionsPresets.HIGH_QUALITY
+                recordingOptions
             );
             setRecording(newRecording);
             setStatus('recording');
