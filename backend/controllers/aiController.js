@@ -150,27 +150,43 @@ async function transcribeAudio(filePath) {
 }
 
 async function generateGeminiResponse(text) {
-    try {
-        // Try precise model version
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-001" });
+    const modelsToTry = [
+        "gemini-1.5-flash",
+        "gemini-1.5-flash-latest",
+        "gemini-1.0-pro",
+        "gemini-pro"
+    ];
 
-        // System instruction (injected as context)
-        const prompt = `
+    const prompt = `
         You are VIBE-BUDDY, an empathetic AI friend. 
         Your purpose: Make users feel heard.
         Tone: Warm, conversational, curious.
         Rules: Keep replies short (2 sentences max). No lectures. Ask one follow-up question.
         
         User said: "${text}"
-        `;
+    `;
 
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        return response.text();
-    } catch (error) {
-        console.error("❌ Gemini Error:", error.message);
-        throw error;
+    for (const modelName of modelsToTry) {
+        try {
+            console.log(`🤖 Trying Gemini model: ${modelName}`);
+            const model = genAI.getGenerativeModel({ model: modelName });
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            const responseText = response.text();
+
+            if (responseText) {
+                console.log(`✅ Success with model: ${modelName}`);
+                return responseText;
+            }
+        } catch (error) {
+            console.warn(`⚠️ Failed with model ${modelName}:`, error.message);
+            // Continue to next model
+        }
     }
+
+    // If all fail
+    console.error("❌ All Gemini models failed.");
+    throw new Error("Unable to connect to any Gemini AI model. Please check API Key permissions.");
 }
 
 
