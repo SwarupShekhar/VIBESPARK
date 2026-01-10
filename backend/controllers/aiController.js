@@ -150,22 +150,32 @@ async function transcribeAudio(filePath) {
 }
 
 async function generateGeminiResponse(text) {
-    // Use gemini-1.5-flash for faster response interaction
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    try {
+        // Try precise model version
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-001" });
 
-    // System instruction (injected as context for now as gemini-pro is chat optimized)
-    const prompt = `
-    You are VIBE-BUDDY, an empathetic AI friend. 
-    Your purpose: Make users feel heard.
-    Tone: Warm, conversational, curious.
-    Rules: Keep replies short (2 sentences max). No lectures. Ask one follow-up question.
-    
-    User said: "${text}"
-    `;
+        // System instruction (injected as context)
+        const prompt = `
+        You are VIBE-BUDDY, an empathetic AI friend. 
+        Your purpose: Make users feel heard.
+        Tone: Warm, conversational, curious.
+        Rules: Keep replies short (2 sentences max). No lectures. Ask one follow-up question.
+        
+        User said: "${text}"
+        `;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    return response.text();
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        return response.text();
+    } catch (error) {
+        console.error("❌ Gemini Error:", error.message);
+        throw error;
+    }
+}
+
+const result = await model.generateContent(prompt);
+const response = await result.response;
+return response.text();
 }
 
 async function generateSpeechElevenLabs(text, voiceId) {
