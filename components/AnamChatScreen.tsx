@@ -51,9 +51,13 @@ export const AnamChatScreen: React.FC<AnamChatScreenProps> = ({ onNavigate }) =>
                 await requestPermission();
             }
 
+            // CRITICAL: Properly configure audio mode for iOS recording
             await Audio.setAudioModeAsync({
                 allowsRecordingIOS: true,
                 playsInSilentModeIOS: true,
+                staysActiveInBackground: false,
+                shouldDuckAndroid: true,
+                playThroughEarpieceAndroid: false,
             });
 
             console.log('Starting recording..');
@@ -64,6 +68,7 @@ export const AnamChatScreen: React.FC<AnamChatScreenProps> = ({ onNavigate }) =>
             setStatus('recording');
         } catch (err) {
             console.error('Failed to start recording', err);
+            alert(`Recording failed: ${err.message}`);
         }
     }
 
