@@ -124,16 +124,16 @@ io.on('connection', (socket) => {
 
 // --- 6. START SERVER ---
 
-// Connect to the database first, then start the combined Express/Socket.IO server
+// 1. Start listening IMMEDIATELY (Fixes Railway "Connection Refused" / 502 Errors)
+server.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Server listening on port ${PORT} (0.0.0.0)`);
+    console.log(`📡 Socket.IO initialized.`);
+});
+
+// 2. Connect to Database asynchronously
 console.log('⏳ Attempting to connect to MongoDB...');
 if (!MONGODB_URI) {
     console.error('❌ Error: MONGODB_URI is undefined. Check Railway Variables.');
-    process.exit(1);
+} else {
+    connectDB();
 }
-
-connectDB().then(() => {
-    server.listen(PORT, '0.0.0.0', () => { // <--- Explicitly bind to 0.0.0.0 for Railway
-        console.log(`🚀 Server listening on port ${PORT} (0.0.0.0)`);
-        console.log(`📡 Socket.IO initialized.`);
-    });
-});
