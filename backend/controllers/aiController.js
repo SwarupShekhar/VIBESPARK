@@ -35,9 +35,17 @@ exports.chatWithAnam = async (req, res) => {
         // --- 1. Deepgram (Speech-to-Text) ---
         console.log("📝 Transcribing with Deepgram...");
         const deepgramResponse = await transcribeAudio(audioPath);
-        const userTranscript = deepgramResponse?.results?.channels[0]?.alternatives[0]?.transcript;
+        console.log("🔍 Full Deepgram response:", JSON.stringify(deepgramResponse, null, 2));
 
-        if (!userTranscript) {
+        // Try multiple possible locations for transcript
+        const userTranscript =
+            deepgramResponse?.results?.channels?.[0]?.alternatives?.[0]?.transcript ||
+            deepgramResponse?.channel?.alternatives?.[0]?.transcript ||
+            deepgramResponse?.results?.transcript ||
+            deepgramResponse?.transcript;
+
+        if (!userTranscript || userTranscript.trim() === '') {
+            console.error("❌ No transcript found in response structure");
             throw new Error("Deepgram failed to transcribe audio.");
         }
         console.log(`🗣️ User said: "${userTranscript}"`);
