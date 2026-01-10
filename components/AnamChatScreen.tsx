@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Audio, ResizeMode, Video } from 'expo-av';
+import { Audio, InterruptionModeAndroid, InterruptionModeIOS, ResizeMode, Video } from 'expo-av';
 import { Mic, Square, X } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -56,7 +56,9 @@ export const AnamChatScreen: React.FC<AnamChatScreenProps> = ({ onNavigate }) =>
                 allowsRecordingIOS: true,
                 playsInSilentModeIOS: true,
                 staysActiveInBackground: false,
+                interruptionModeIOS: InterruptionModeIOS.DoNotMix,
                 shouldDuckAndroid: true,
+                interruptionModeAndroid: InterruptionModeAndroid.DoNotMix,
                 playThroughEarpieceAndroid: false,
             });
 
