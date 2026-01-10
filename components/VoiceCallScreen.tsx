@@ -1,22 +1,22 @@
 import { Mic, MicOff, PhoneOff, Volume2, VolumeX } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { io } from 'socket.io-client'; // Import socket.io-client directly
+import { io } from 'socket.io-client';
 import { COLORS } from '../constants/theme';
-import { auth } from '../firebase-config';
 
 interface VoiceCallScreenProps {
     onNavigate: (screen: string) => void;
     onCallEnd: () => void;
     matchedUser?: any;
+    currentUser: any;
 }
 
-export const VoiceCallScreen: React.FC<VoiceCallScreenProps> = ({ onNavigate, onCallEnd, matchedUser }) => {
+export const VoiceCallScreen: React.FC<VoiceCallScreenProps> = ({ onNavigate, onCallEnd, matchedUser, currentUser }) => {
     const [seconds, setSeconds] = useState(180); // 3 minutes
     const [isMuted, setIsMuted] = useState(false);
     const [isSpeakerOn, setIsSpeakerOn] = useState(true);
 
-    const currentUserId = auth.currentUser?.uid || 'anon';
+    const currentUserId = currentUser?.id || 'anon';
     const roomId = matchedUser ? [currentUserId, matchedUser.id || 'unknown'].sort().join('-') : 'test-room';
 
     useEffect(() => {

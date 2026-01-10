@@ -5,7 +5,10 @@
 // --- 1. CONFIGURATION & IMPORTS ---
 
 // Load environment variables from .env file FIRST (safely)
-require('dotenv-safe').config();
+// Load environment variables from .env file FIRST (safely)
+require('dotenv-safe').config({
+    allowMissingEnv: true // Critical for production/Railway where vars are injected, not in a file
+});
 
 // Core Server and Database Modules
 const express = require('express');

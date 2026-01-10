@@ -1,9 +1,8 @@
-import { doc, getDoc } from 'firebase/firestore';
 import { Edit2, User as UserIcon } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { COLORS } from '../constants/theme';
-import { auth, db } from '../firebase-config';
+import { getProfile } from '../services/api';
 
 interface ProfileScreenProps {
     onNavigate: (screen: string) => void;
@@ -15,19 +14,13 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onNavigate }) => {
 
     useEffect(() => {
         const fetchProfile = async () => {
-            const user = auth.currentUser;
-            if (user && db) {
-                try {
-                    const docRef = doc(db, 'users', user.uid);
-                    const docSnap = await getDoc(docRef);
-                    if (docSnap.exists()) {
-                        setUserData(docSnap.data());
-                    }
-                } catch (error) {
-                    console.error("Error fetching profile:", error);
-                } finally {
-                    setLoading(false);
-                }
+            try {
+                const profile = await getProfile();
+                setUserData(profile);
+            } catch (error) {
+                console.error("Error fetching profile:", error);
+            } finally {
+                setLoading(false);
             }
         };
         fetchProfile();
@@ -48,7 +41,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onNavigate }) => {
                     <View style={styles.avatarContainer}>
                         <UserIcon size={40} color="#fff" />
                     </View>
-                    <Text style={styles.email}>{auth.currentUser?.email}</Text>
+                    <Text style={styles.email}>{userData?.email || 'User'}</Text>
                     <TouchableOpacity
                         style={styles.editButton}
                         onPress={() => onNavigate('profile-creation')} // Reuse creation screen for editing

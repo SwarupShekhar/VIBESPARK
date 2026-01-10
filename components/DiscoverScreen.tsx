@@ -1,12 +1,11 @@
-import { collection, getDocs, query, where } from 'firebase/firestore';
 import { MessageCircle, User as UserIcon } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { COLORS } from '../constants/theme';
-import { auth, db } from '../firebase-config';
 
 interface DiscoverScreenProps {
     onNavigate: (screen: string) => void;
+    currentUser: any;
 }
 
 interface UserProfile {
@@ -16,37 +15,17 @@ interface UserProfile {
     isProfileComplete: boolean;
 }
 
-export const DiscoverScreen: React.FC<DiscoverScreenProps> = ({ onNavigate }) => {
-    const [loading, setLoading] = useState(true);
+export const DiscoverScreen: React.FC<DiscoverScreenProps> = ({ onNavigate, currentUser }) => {
+    const [loading, setLoading] = useState(false);
     const [users, setUsers] = useState<UserProfile[]>([]);
 
     useEffect(() => {
-        const fetchUsers = async () => {
-            if (db && auth.currentUser) {
-                try {
-                    const usersRef = collection(db, 'users');
-                    // Simple query: get all users who are NOT me
-                    // Note: In a real app, you'd want pagination and better filtering
-                    const q = query(usersRef, where("isProfileComplete", "==", true));
-
-                    const querySnapshot = await getDocs(q);
-                    const fetchedUsers: UserProfile[] = [];
-
-                    querySnapshot.forEach((doc) => {
-                        if (doc.id !== auth.currentUser?.uid) {
-                            fetchedUsers.push({ id: doc.id, ...doc.data() } as UserProfile);
-                        }
-                    });
-
-                    setUsers(fetchedUsers);
-                } catch (error) {
-                    console.error("Error fetching users:", error);
-                } finally {
-                    setLoading(false);
-                }
-            }
-        };
-        fetchUsers();
+        // TODO: Implement GET /api/users/discover
+        const mockUsers: UserProfile[] = [
+            { id: '1', email: 'alice@example.com', vibes: ['Creative', 'Fun'], isProfileComplete: true },
+            { id: '2', email: 'bob@example.com', vibes: ['Chill', 'Tech'], isProfileComplete: true },
+        ];
+        setUsers(mockUsers);
     }, []);
 
     const renderItem = ({ item }: { item: UserProfile }) => (

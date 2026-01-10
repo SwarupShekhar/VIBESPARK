@@ -165,17 +165,18 @@ export default function App() {
             onNavigate={navigateToScreen}
             onCallEnd={handleCallEnd}
             matchedUser={matchedUser}
+            currentUser={user}
           />
         );
 
       case 'chat':
-        return <PostCallChatScreen onNavigate={navigateToScreen} />;
+        return <PostCallChatScreen onNavigate={navigateToScreen} currentUser={user} />;
 
       case 'feed':
         return <ReelsFeedScreen onNavigate={navigateToScreen} />;
 
       case 'discover':
-        return <DiscoverScreen onNavigate={navigateToScreen} />;
+        return <DiscoverScreen onNavigate={navigateToScreen} currentUser={user} />;
 
       default:
         return <HomeScreen onNavigate={navigateToScreen} streakCount={streakCount} onSignOut={handleSignOut} />;

@@ -1,57 +1,21 @@
-import { addDoc, collection, onSnapshot, orderBy, query, serverTimestamp } from 'firebase/firestore';
 import { ArrowLeft } from 'lucide-react-native';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Bubble, GiftedChat, IMessage, InputToolbar } from 'react-native-gifted-chat';
 import { COLORS } from '../constants/theme';
-import { auth, db } from '../firebase-config';
 
 interface PostCallChatScreenProps {
     onNavigate: (screen: string) => void;
+    currentUser: any;
 }
 
-export const PostCallChatScreen: React.FC<PostCallChatScreenProps> = ({ onNavigate }) => {
+export const PostCallChatScreen: React.FC<PostCallChatScreenProps> = ({ onNavigate, currentUser }) => {
     const [messages, setMessages] = useState<IMessage[]>([]);
-    const user = auth.currentUser;
 
-    // In a real app, this would be a unique chat ID between two users
-    // For demo purposes, we'll use a single global chat room or a temporary one
-    const chatId = 'demo_chat_room';
-
-    useEffect(() => {
-        if (!db) return;
-
-        const messagesRef = collection(db, 'chats', chatId, 'messages');
-        const q = query(messagesRef, orderBy('createdAt', 'desc'));
-
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const newMessages = snapshot.docs.map(doc => {
-                const data = doc.data();
-                return {
-                    _id: doc.id,
-                    text: data.text,
-                    createdAt: data.createdAt?.toDate() || new Date(),
-                    user: data.user,
-                } as IMessage;
-            });
-            setMessages(newMessages);
-        });
-
-        return () => unsubscribe();
+    const onSend = useCallback((newMessages: IMessage[] = []) => {
+        setMessages(previousMessages => GiftedChat.append(previousMessages, newMessages));
+        // TODO: Send message to Backend API -> Socket.IO
     }, []);
-
-    const onSend = useCallback((messages: IMessage[] = []) => {
-        if (!db || !user) return;
-
-        const { _id, createdAt, text, user: msgUser } = messages[0];
-
-        addDoc(collection(db, 'chats', chatId, 'messages'), {
-            _id,
-            createdAt: serverTimestamp(),
-            text,
-            user: msgUser,
-        });
-    }, [user]);
 
     const renderBubble = (props: any) => {
         return (
@@ -106,8 +70,8 @@ export const PostCallChatScreen: React.FC<PostCallChatScreenProps> = ({ onNaviga
                 messages={messages}
                 onSend={messages => onSend(messages)}
                 user={{
-                    _id: user?.uid || 'anonymous',
-                    name: user?.email?.split('@')[0] || 'User',
+                    _id: currentUser?.id || 'anonymous',
+                    name: currentUser?.name || 'User',
                     avatar: 'https://placeimg.com/140/140/any',
                 }}
                 renderBubble={renderBubble}

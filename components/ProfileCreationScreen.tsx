@@ -1,7 +1,5 @@
-// import { doc, updateDoc } from 'firebase/firestore';
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-// import { auth, db } from '../firebase-config';
 
 interface ProfileCreationScreenProps {
     onNavigate: (screen: string) => void;
