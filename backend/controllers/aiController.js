@@ -102,17 +102,41 @@ async function transcribeAudio(filePath) {
         const audioData = fs.readFileSync(filePath);
         console.log(`📏 Audio file size: ${audioData.length} bytes`);
 
+        // Detect file extension for proper Content-Type
+        const ext = path.extname(filePath).toLowerCase();
+        const contentType = ext === '.m4a' ? 'audio/mp4' :
+            ext === '.wav' ? 'audio/wav' :
+                ext === '.mp3' ? 'audio/mpeg' :
+                    'audio/mp4'; // default to mp4 for m4a
+
+        console.log(`🎵 Sending audio as: ${contentType}`);
+
         const response = await axios.post(
-            'https://api.deepgram.com/v1/listen?smart_format=true&model=nova-2',
+            'https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true&language=en',
             audioData,
             {
                 headers: {
                     'Authorization': `Token ${DEEPGRAM_API_KEY}`,
-                    'Content-Type': 'audio/m4a'
+                    'Content-Type': contentType
                 }
             }
         );
+
         console.log('✅ Deepgram response:', JSON.stringify(response.data).slice(0, 200));
+
+        // Check if transcript is empty
+        const transcript = response.data?.results?.channels?.[0]?.alternatives?.[0]?.transcript;
+        const confidence = response.data?.results?.channels?.[0]?.alternatives?.[0]?.confidence;
+
+        if (!transcript || transcript.trim() === '') {
+            console.error('❌ Deepgram returned empty transcript. Possible reasons:');
+            console.error('   - Audio file is silent or corrupted');
+            console.error('   - Audio format not supported');
+            console.error('   - Background noise only, no clear speech');
+            console.error(`   - Confidence: ${confidence}`);
+            throw new Error('No speech detected in audio. Please speak clearly and try again.');
+        }
+
         return response.data;
     } catch (error) {
         console.error('❌ Deepgram API Error:', {
