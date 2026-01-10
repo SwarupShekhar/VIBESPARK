@@ -150,7 +150,8 @@ async function transcribeAudio(filePath) {
 }
 
 async function generateGeminiResponse(text) {
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    // Use gemini-1.5-flash for faster response interaction
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     // System instruction (injected as context for now as gemini-pro is chat optimized)
     const prompt = `
