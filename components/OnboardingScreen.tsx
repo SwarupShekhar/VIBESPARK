@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { login, register } from '../services/api';
 
 interface OnboardingScreenProps {
     onLogin: (userData?: any, token?: string) => void;
@@ -13,8 +14,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onLogin }) =
     const [loading, setLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
 
-    const API_URL = 'http://localhost:3000/api/users'; // Adjust for your environment (e.g., 10.0.2.2 for Android Emulator)
-
+    // ... (Inside OnboardingScreen component)
     const handleAuth = async () => {
         if (!email || !password || (authMode === 'signup' && !username)) {
             setErrorMessage('Please enter all required fields');
@@ -25,21 +25,12 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onLogin }) =
         setErrorMessage('');
 
         try {
-            const endpoint = authMode === 'signin' ? '/login' : '/register';
-            const body = authMode === 'signin'
-                ? { email, password }
-                : { username, email, password };
-
-            const response = await fetch(`${API_URL}${endpoint}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || 'Authentication failed');
+            let data;
+            if (authMode === 'signin') {
+                data = await login({ email, password });
+            } else {
+                // Backend expects 'name', we have 'username' in state
+                data = await register({ name: username, email, password });
             }
 
             // Success
@@ -50,7 +41,19 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onLogin }) =
 
         } catch (err: any) {
             console.error("Auth error:", err);
-            setErrorMessage(err.message || 'Authentication failed');
+
+            let msg = err.message || 'Authentication failed';
+
+            if (err.response?.data) {
+                if (err.response.data.message) {
+                    msg = err.response.data.message;
+                } else if (err.response.data.errors && Array.isArray(err.response.data.errors)) {
+                    // Extract validation messages
+                    msg = err.response.data.errors.map((e: any) => e.msg).join('\n');
+                }
+            }
+
+            setErrorMessage(msg);
         } finally {
             setLoading(false);
         }

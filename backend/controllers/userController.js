@@ -31,9 +31,13 @@ exports.registerUser = async (req, res) => {
 
         await user.save();
 
-        // Return user data (no token on register unless requested, but sticking to user example)
+        // Generate Token
+        const payload = { userId: user._id };
+        const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '7d' });
+
         res.status(201).json({
             message: 'User registered successfully',
+            token,
             user: {
                 id: user._id,
                 name: user.name,
