@@ -94,9 +94,10 @@ export const AnamChatScreen: React.FC<AnamChatScreenProps> = ({ onNavigate }) =>
             );
             setRecording(newRecording);
             setStatus('recording');
-        } catch (err) {
+        } catch (err: any) {
             console.error('Failed to start recording', err);
-            alert(`Recording failed: ${err.message}`);
+            setStatus('idle');
+            alert(`Recording failed: ${err.message || 'Unknown error'}`);
         }
     }
 
