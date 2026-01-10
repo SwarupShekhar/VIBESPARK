@@ -90,17 +90,31 @@ exports.chatWithAnam = async (req, res) => {
 // --- Helper Functions ---
 
 async function transcribeAudio(filePath) {
-    const audioData = fs.readFileSync(filePath);
-    const form = new FormData();
-    // Deepgram direct buffer upload or stream
-    // Using Deepgram API via axios
-    const response = await axios.post('https://api.deepgram.com/v1/listen?smart_format=true&model=nova-2', audioData, {
-        headers: {
-            'Authorization': `Token ${DEEPGRAM_API_KEY}`,
-            'Content-Type': 'audio/wav' // or autodetect, multer usually saves as binary
-        }
-    });
-    return response.data;
+    try {
+        const audioData = fs.readFileSync(filePath);
+        console.log(`📏 Audio file size: ${audioData.length} bytes`);
+
+        const response = await axios.post(
+            'https://api.deepgram.com/v1/listen?smart_format=true&model=nova-2',
+            audioData,
+            {
+                headers: {
+                    'Authorization': `Token ${DEEPGRAM_API_KEY}`,
+                    'Content-Type': 'audio/m4a'
+                }
+            }
+        );
+        console.log('✅ Deepgram response:', JSON.stringify(response.data).slice(0, 200));
+        return response.data;
+    } catch (error) {
+        console.error('❌ Deepgram API Error:', {
+            status: error.response?.status,
+            statusText: error.response?.statusText,
+            data: error.response?.data,
+            message: error.message
+        });
+        throw new Error(`Deepgram API failed: ${error.response?.data?.err_msg || error.message}`);
+    }
 }
 
 async function generateGeminiResponse(text) {
