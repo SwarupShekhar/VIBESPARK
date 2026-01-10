@@ -27,6 +27,11 @@ const upload = multer({ storage: storage });
 
 // POST /api/ai/chat
 // Expects 'audio' file field
+// POST /api/ai/chat
+// Expects 'audio' file field
 router.post('/chat', upload.single('audio'), aiController.chatWithAnam);
+
+// GET /api/ai/debug-gemini
+router.get('/debug-gemini', aiController.debugGemini);
 
 module.exports = router;
