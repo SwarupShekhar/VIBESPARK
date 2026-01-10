@@ -15,13 +15,13 @@ export const VoiceCallScreen: React.FC<VoiceCallScreenProps> = ({ onNavigate, on
     const [seconds, setSeconds] = useState(180); // 3 minutes
     const [isMuted, setIsMuted] = useState(false);
     const [isSpeakerOn, setIsSpeakerOn] = useState(true);
+    const [isConnected, setIsConnected] = useState(false);
 
     const currentUserId = currentUser?.id || 'anon';
     const roomId = matchedUser ? [currentUserId, matchedUser.id || 'unknown'].sort().join('-') : 'test-room';
 
     useEffect(() => {
-        // Connect to Socket.IO Server
-        // Extract root URL from API URL (remove /api) or default to localhost
+        // Connect to Socket.IO Server for signaling
         const SOCKET_URL = process.env.EXPO_PUBLIC_API_URL
             ? process.env.EXPO_PUBLIC_API_URL.replace('/api', '')
             : 'http://localhost:3000';
@@ -30,11 +30,8 @@ export const VoiceCallScreen: React.FC<VoiceCallScreenProps> = ({ onNavigate, on
 
         socket.on('connect', () => {
             console.log("Connected to signaling server");
+            setIsConnected(true);
             socket.emit('join_room', roomId);
-
-            // Initiate mock offer to start the chain (simulation)
-            console.log("Emitting Mock Offer...");
-            socket.emit('offer', { toRoom: roomId, signal: { type: 'offer', sdp: 'mock-sdp' } });
         });
 
         socket.on('user_joined', (userId) => {
@@ -43,7 +40,6 @@ export const VoiceCallScreen: React.FC<VoiceCallScreenProps> = ({ onNavigate, on
 
         socket.on('offer', (signal) => {
             console.log("Received Offer:", signal);
-            // In real WebRTC, you'd createAnswer here
             socket.emit('answer', { toRoom: roomId, signal: { type: 'answer', sdp: 'mock-answer' } });
         });
 
@@ -53,6 +49,10 @@ export const VoiceCallScreen: React.FC<VoiceCallScreenProps> = ({ onNavigate, on
 
         socket.on('ice-candidate', (candidate) => {
             console.log("Received ICE Candidate:", candidate);
+        });
+
+        socket.on('disconnect', () => {
+            setIsConnected(false);
         });
 
         return () => {
@@ -91,20 +91,23 @@ export const VoiceCallScreen: React.FC<VoiceCallScreenProps> = ({ onNavigate, on
         <View style={styles.container}>
             <View style={styles.header}>
                 <Text style={styles.timer}>{formatTime(seconds)}</Text>
+                <Text style={styles.connectionStatus}>
+                    {isConnected ? '🟢 Connected' : '🔴 Connecting...'}
+                </Text>
             </View>
 
             <View style={styles.profileContainer}>
                 <View style={styles.avatarContainer}>
                     <Text style={styles.avatarText}>
-                        {matchedUser?.email?.charAt(0).toUpperCase() || '?'}
+                        {matchedUser?.email?.charAt(0).toUpperCase() || matchedUser?.name?.charAt(0).toUpperCase() || '?'}
                     </Text>
                 </View>
                 <Text style={styles.name}>
-                    {matchedUser?.email?.split('@')[0] || 'Unknown User'}
+                    {matchedUser?.name || matchedUser?.email?.split('@')[0] || 'Unknown User'}
                 </Text>
-                <Text style={styles.status}>Connected</Text>
+                <Text style={styles.status}>Voice Call Active</Text>
 
-                {matchedUser?.vibes && (
+                {matchedUser?.vibes && Array.isArray(matchedUser.vibes) && (
                     <View style={styles.vibesContainer}>
                         {matchedUser.vibes.map((vibe: string, index: number) => (
                             <View key={index} style={styles.vibeBadge}>
@@ -120,26 +123,23 @@ export const VoiceCallScreen: React.FC<VoiceCallScreenProps> = ({ onNavigate, on
                     style={[styles.controlButton, !isSpeakerOn && styles.controlButtonInactive]}
                     onPress={() => setIsSpeakerOn(!isSpeakerOn)}
                 >
-                    {isSpeakerOn ?
-                        <Volume2 size={24} color="#fff" /> :
-                        <VolumeX size={24} color="#fff" />
-                    }
+                    {/* @ts-ignore */}
+                    {isSpeakerOn ? <Volume2 size={24} color="#fff" /> : <VolumeX size={24} color="#fff" />}
                 </TouchableOpacity>
 
                 <TouchableOpacity
                     style={[styles.controlButton, isMuted && styles.controlButtonInactive]}
                     onPress={() => setIsMuted(!isMuted)}
                 >
-                    {isMuted ?
-                        <MicOff size={24} color="#fff" /> :
-                        <Mic size={24} color="#fff" />
-                    }
+                    {/* @ts-ignore */}
+                    {isMuted ? <MicOff size={24} color="#fff" /> : <Mic size={24} color="#fff" />}
                 </TouchableOpacity>
 
                 <TouchableOpacity
                     style={styles.endCallButton}
                     onPress={handleEndCall}
                 >
+                    {/* @ts-ignore */}
                     <PhoneOff size={32} color="#fff" />
                 </TouchableOpacity>
             </View>
@@ -163,6 +163,11 @@ const styles = StyleSheet.create({
         fontWeight: '300',
         color: '#fff',
         letterSpacing: 2,
+    },
+    connectionStatus: {
+        fontSize: 14,
+        color: '#888',
+        marginTop: 8,
     },
     profileContainer: {
         alignItems: 'center',
@@ -191,7 +196,7 @@ const styles = StyleSheet.create({
     },
     status: {
         fontSize: 16,
-        color: '#4ade80', // green-400
+        color: '#4ade80',
         fontWeight: '500',
     },
     vibesContainer: {
@@ -233,7 +238,7 @@ const styles = StyleSheet.create({
         width: 72,
         height: 72,
         borderRadius: 36,
-        backgroundColor: '#ef4444', // red-500
+        backgroundColor: '#ef4444',
         alignItems: 'center',
         justifyContent: 'center',
         shadowColor: '#ef4444',

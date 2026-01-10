@@ -6,6 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect, useState } from 'react';
 import { StatusBar, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { AnamChatScreen } from './components/AnamChatScreen';
 import { BottomNavBar } from './components/BottomNavBar';
 import { ConnectLoader } from './components/ConnectLoader';
 import { DiscoverScreen } from './components/DiscoverScreen';
@@ -19,7 +20,7 @@ import { VoiceCallScreen } from './components/VoiceCallScreen';
 import { COLORS } from './constants/theme';
 import { getProfile, logout } from './services/api';
 
-type Screen = 'onboarding' | 'home' | 'profile' | 'call' | 'chat' | 'feed' | 'discover' | 'profile-creation' | 'connecting';
+type Screen = 'onboarding' | 'home' | 'profile' | 'call' | 'chat' | 'feed' | 'discover' | 'profile-creation' | 'connecting' | 'anam-chat';
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('onboarding');
@@ -91,7 +92,12 @@ export default function App() {
       console.log("Finding match...");
 
       setTimeout(() => {
-        const randomUser = { uid: 'mock_uid', username: 'Mock User' }; // Mock
+        const randomUser = {
+          id: 'mock_uid_123',
+          email: 'receiver@test.com',
+          name: 'Mock User',
+          vibes: ['Chill', 'Music']
+        }; // Mock
         setMatchedUser(randomUser);
         setCurrentScreen('call');
       }, 2000);
@@ -177,6 +183,9 @@ export default function App() {
 
       case 'discover':
         return <DiscoverScreen onNavigate={navigateToScreen} currentUser={user} />;
+
+      case 'anam-chat':
+        return <AnamChatScreen onNavigate={navigateToScreen} />;
 
       default:
         return <HomeScreen onNavigate={navigateToScreen} streakCount={streakCount} onSignOut={handleSignOut} />;

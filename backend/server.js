@@ -80,8 +80,11 @@ const connectDB = async () => {
 // --- 4. API ROUTES ---
 
 // Routes
+// Routes
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/reels', require('./routes/reelRoutes'));
+app.use('/api/livekit', require('./routes/livekitRoutes'));
+app.use('/api/ai', require('./routes/aiRoutes'));
 
 // Root Endpoint
 app.get('/', (req, res) => {

@@ -1,6 +1,6 @@
 import { Flame } from 'lucide-react-native';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ConnectOrb } from './ConnectOrb';
 
 interface HomeScreenProps {
@@ -23,9 +23,16 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigate, streakCount,
             <View style={styles.content}>
                 <View style={styles.orbWrapper}>
                     <ConnectOrb onPress={() => onNavigate('call')} />
+                    <TouchableOpacity
+                        style={styles.vibeBuddyButton}
+                        onPress={() => onNavigate('anam-chat')}
+                    >
+                        <Text style={styles.vibeBuddyText}>🤖 Talk to VIBE-buddy</Text>
+                    </TouchableOpacity>
                 </View>
 
                 <View style={styles.streakContainer}>
+                    {/* @ts-ignore */}
                     <Flame size={20} color="#F97316" fill="#F97316" />
                     <Text style={styles.streakText}>{streakCount} day streak</Text>
                 </View>
@@ -102,5 +109,19 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         maxWidth: 300,
         lineHeight: 24,
+    },
+    vibeBuddyButton: {
+        marginTop: 20,
+        backgroundColor: 'rgba(255,255,255,0.1)',
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.2)',
+    },
+    vibeBuddyText: {
+        color: '#fff',
+        fontWeight: 'bold',
+        fontSize: 16,
     },
 });
