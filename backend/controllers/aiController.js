@@ -225,3 +225,27 @@ async function generateAnamVideo(text, avatarId) {
     // For MVP safety, returning a dummy video URL if API fails or is unknown.
     return "https://www.w3schools.com/html/mov_bbb.mp4"; // Mock video for testing frontend
 }
+
+// --- Debug Function ---
+async function debugGemini(req, res) {
+    try {
+        console.log("🔍 Debugging Gemini API Access...");
+        const response = await axios.get(
+            `https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`
+        );
+        console.log("✅ Available Models:", JSON.stringify(response.data, null, 2));
+        res.json({ success: true, models: response.data });
+    } catch (error) {
+        console.error("❌ Gemini Debug Error:", error.response?.data || error.message);
+        res.status(500).json({
+            success: false,
+            error: error.response?.data || error.message,
+            details: "Could not list models. Check if 'Generative Language API' is enabled in Google Cloud Console."
+        });
+    }
+}
+
+module.exports = {
+    chatWithAnam,
+    debugGemini
+};
