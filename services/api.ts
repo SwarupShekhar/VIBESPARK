@@ -37,8 +37,20 @@ export const login = async (credentials: any) => {
     return response.data;
 };
 
+// Profile
 export const getProfile = async () => {
     const response = await api.get('/users/profile');
+    return response.data;
+};
+
+// Reels
+export const getReels = async () => {
+    const response = await api.get('/reels');
+    return response.data;
+};
+
+export const createReel = async (reelData: { videoUrl: string; caption?: string }) => {
+    const response = await api.post('/reels', reelData);
     return response.data;
 };
 

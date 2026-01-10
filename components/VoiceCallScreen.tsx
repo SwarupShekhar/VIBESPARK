@@ -21,7 +21,12 @@ export const VoiceCallScreen: React.FC<VoiceCallScreenProps> = ({ onNavigate, on
 
     useEffect(() => {
         // Connect to Socket.IO Server
-        const socket = io('http://localhost:3000');
+        // Extract root URL from API URL (remove /api) or default to localhost
+        const SOCKET_URL = process.env.EXPO_PUBLIC_API_URL
+            ? process.env.EXPO_PUBLIC_API_URL.replace('/api', '')
+            : 'http://localhost:3000';
+
+        const socket = io(SOCKET_URL);
 
         socket.on('connect', () => {
             console.log("Connected to signaling server");

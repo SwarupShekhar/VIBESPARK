@@ -77,15 +77,15 @@ const connectDB = async () => {
 
 // --- 4. API ROUTES ---
 
-const userRoutes = require('./routes/userRoutes');
+// Routes
+app.use('/api/users', require('./routes/userRoutes'));
+app.use('/api/reels', require('./routes/reelRoutes'));
 
-// Health Check / Test Endpoint
+// Root Endpoint
 app.get('/', (req, res) => {
     res.send('Vibespark backend is running 🚀');
 });
 
-// Mount User Routes
-app.use('/api/users', userRoutes);
 
 
 // --- 5. SOCKET.IO SIGNALING LOGIC (WebRTC Foundation) ---
