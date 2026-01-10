@@ -173,10 +173,7 @@ async function generateGeminiResponse(text) {
     }
 }
 
-const result = await model.generateContent(prompt);
-const response = await result.response;
-return response.text();
-}
+
 
 async function generateSpeechElevenLabs(text, voiceId) {
     // Returns audio buffer or stream
