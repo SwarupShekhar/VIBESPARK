@@ -13,7 +13,7 @@ const ANAM_API_KEY = process.env.ANAM_API_KEY;
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
-exports.chatWithAnam = async (req, res) => {
+async function chatWithAnam(req, res) {
     try {
         console.log("🎤 Received voice chat request");
 
