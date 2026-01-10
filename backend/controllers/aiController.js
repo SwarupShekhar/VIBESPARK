@@ -17,6 +17,14 @@ exports.chatWithAnam = async (req, res) => {
     try {
         console.log("🎤 Received voice chat request");
 
+        // Validate API keys first
+        if (!DEEPGRAM_API_KEY || !GEMINI_API_KEY || !ELEVENLABS_API_KEY) {
+            console.error("❌ Missing API keys. Check environment variables.");
+            return res.status(500).json({
+                error: 'Server configuration error. Please add API keys to Railway environment.'
+            });
+        }
+
         if (!req.file) {
             return res.status(400).json({ error: 'No audio file uploaded' });
         }

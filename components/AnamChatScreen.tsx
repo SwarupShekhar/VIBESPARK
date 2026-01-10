@@ -39,6 +39,13 @@ export const AnamChatScreen: React.FC<AnamChatScreenProps> = ({ onNavigate }) =>
 
     async function startRecording() {
         try {
+            // Clean up any existing recording first
+            if (recording) {
+                console.log('Cleaning up previous recording...');
+                await recording.stopAndUnloadAsync();
+                setRecording(null);
+            }
+
             if (permissionResponse?.status !== 'granted') {
                 console.log('Requesting permission..');
                 await requestPermission();
@@ -50,10 +57,10 @@ export const AnamChatScreen: React.FC<AnamChatScreenProps> = ({ onNavigate }) =>
             });
 
             console.log('Starting recording..');
-            const { recording } = await Audio.Recording.createAsync(
+            const { recording: newRecording } = await Audio.Recording.createAsync(
                 Audio.RecordingOptionsPresets.HIGH_QUALITY
             );
-            setRecording(recording);
+            setRecording(newRecording);
             setStatus('recording');
         } catch (err) {
             console.error('Failed to start recording', err);
