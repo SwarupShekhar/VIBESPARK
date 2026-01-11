@@ -56,10 +56,10 @@ async function chatWithAnam(req, res) {
         console.log(`🤖 AI Reply: "${aiReply}"`);
 
         // --- 3. ElevenLabs (Text-to-Speech) ---
-        console.log("🔊 Generating voice with ElevenLabs...");
-        // Use a default Voice ID (e.g., '21m00Tcm4TlvDq8ikWAM' is Rachel, or pick one from env)
-        const VOICE_ID = '21m00Tcm4TlvDq8ikWAM';
-        const audioStream = await generateSpeechElevenLabs(aiReply, VOICE_ID);
+        // TEMPORARILY DISABLED: ElevenLabs returning "unusual activity" error
+        // console.log("🔊 Generating voice with ElevenLabs...");
+        // const VOICE_ID = '21m00Tcm4TlvDq8ikWAM';
+        // const audioStream = await generateSpeechElevenLabs(aiReply, VOICE_ID);
 
         // --- 4. Anam AI (Avatar Video) ---
         // NOTE: Anam API usually requires audio input to generate lip-sync.
