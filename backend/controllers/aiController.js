@@ -151,12 +151,13 @@ async function transcribeAudio(filePath) {
 
 async function generateGeminiResponse(text) {
     const modelsToTry = [
+        "gemini-flash-latest",
         "gemini-1.5-flash",
         "models/gemini-1.5-flash",
         "gemini-1.5-flash-latest",
+        "gemini-pro-latest",
         "gemini-pro",
-        "models/gemini-pro",
-        "gemini-1.0-pro"
+        "models/gemini-pro"
     ];
 
     const prompt = `
