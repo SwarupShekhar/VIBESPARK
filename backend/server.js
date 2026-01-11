@@ -85,6 +85,7 @@ app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/reels', require('./routes/reelRoutes'));
 app.use('/api/livekit', require('./routes/livekitRoutes'));
 app.use('/api/ai', require('./routes/aiRoutes'));
+app.use('/api/anam', require('./routes/anamRoutes'));
 
 // Root Endpoint
 app.get('/', (req, res) => {
