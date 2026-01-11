@@ -152,9 +152,11 @@ async function transcribeAudio(filePath) {
 async function generateGeminiResponse(text) {
     const modelsToTry = [
         "gemini-1.5-flash",
+        "models/gemini-1.5-flash",
         "gemini-1.5-flash-latest",
-        "gemini-1.0-pro",
-        "gemini-pro"
+        "gemini-pro",
+        "models/gemini-pro",
+        "gemini-1.0-pro"
     ];
 
     const prompt = `
@@ -170,6 +172,8 @@ async function generateGeminiResponse(text) {
         try {
             console.log(`🤖 Trying Gemini model: ${modelName}`);
             const model = genAI.getGenerativeModel({ model: modelName });
+
+            // Log if we are trying a specific endpoint (SDK might not expose this easily though)
             const result = await model.generateContent(prompt);
             const response = await result.response;
             const responseText = response.text();
@@ -180,7 +184,7 @@ async function generateGeminiResponse(text) {
             }
         } catch (error) {
             console.warn(`⚠️ Failed with model ${modelName}:`, error.message);
-            // Continue to next model
+            // If it's a 404, the modelName or Key Access is the issue
         }
     }
 
