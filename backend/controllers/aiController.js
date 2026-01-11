@@ -3,11 +3,12 @@ const path = require('path');
 const axios = require('axios');
 const FormData = require('form-data');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const textToSpeech = require('@google-cloud/text-to-speech');
 
 // --- Configuration ---
 const DEEPGRAM_API_KEY = process.env.DEEPGRAM_API_KEY;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
+const GOOGLE_TTS_API_KEY = process.env.GOOGLE_TTS_API_KEY;
 const ANAM_API_KEY = process.env.ANAM_API_KEY;
 
 // Initialize Gemini
@@ -55,10 +56,9 @@ async function chatWithAnam(req, res) {
         const aiReply = await generateGeminiResponse(userTranscript);
         console.log(`🤖 AI Reply: "${aiReply}"`);
 
-        // --- 3. ElevenLabs (Text-to-Speech) ---
-        console.log("🔊 Generating voice with ElevenLabs...");
-        const VOICE_ID = '21m00Tcm4TlvDq8ikWAM';
-        const audioStream = await generateSpeechElevenLabs(aiReply, VOICE_ID);
+        // --- 3. Google Cloud TTS (Text-to-Speech) ---
+        console.log("🔊 Generating voice with Google TTS...");
+        const audioBuffer = await generateSpeechGoogleTTS(aiReply);
 
         // --- 4. Anam AI (Avatar Video) ---
         // NOTE: Anam API usually requires audio input to generate lip-sync.
@@ -195,24 +195,30 @@ async function generateGeminiResponse(text) {
 
 
 
-async function generateSpeechElevenLabs(text, voiceId) {
-    // Returns audio buffer or stream
+async function generateSpeechGoogleTTS(text) {
+    // Use Google Cloud TTS REST API with API key
     const response = await axios.post(
-        `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
+        `https://texttospeech.googleapis.com/v1/text:synthesize?key=${GOOGLE_TTS_API_KEY}`,
         {
-            text: text,
-            model_id: "eleven_multilingual_v2",
-            voice_settings: { stability: 0.5, similarity_boost: 0.5 }
+            input: { text: text },
+            voice: {
+                languageCode: 'en-US',
+                name: 'en-US-Neural2-F', // Female voice
+                ssmlGender: 'FEMALE'
+            },
+            audioConfig: {
+                audioEncoding: 'MP3',
+                speakingRate: 1.0,
+                pitch: 0.0
+            }
         },
         {
-            headers: {
-                'xi-api-key': ELEVENLABS_API_KEY,
-                'Content-Type': 'application/json'
-            },
-            responseType: 'arraybuffer'
+            headers: { 'Content-Type': 'application/json' }
         }
     );
-    return response.data;
+
+    // Google returns base64-encoded audio in response.data.audioContent
+    return Buffer.from(response.data.audioContent, 'base64');
 }
 
 async function generateAnamVideo(text, avatarId) {
