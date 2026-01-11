@@ -1,0 +1,34 @@
+{
+    "cli": {
+        "version": ">= 7.1.2"
+    },
+    "build": {
+        "development": {
+            "developmentClient": true,
+            "distribution": "internal",
+            "ios": {
+                "resourceClass": "m-medium"
+            },
+            "android": {
+                "buildType": "apk"
+            },
+            "env": {
+                "NPM_CONFIG_LEGACY_PEER_DEPS": "true"
+            }
+        },
+        "preview": {
+            "distribution": "internal",
+            "ios": {
+                "resourceClass": "m-medium"
+            }
+        },
+        "production": {
+            "ios": {
+                "resourceClass": "m-medium"
+            }
+        }
+    },
+    "submit": {
+        "production": {}
+    }
+}
