@@ -1,7 +1,9 @@
 import { io, Socket } from 'socket.io-client';
 
-// Use the URL provided by the user
-const SOCKET_URL = 'https://your-vibespark-backend.onrender.com';
+// Use the URL from environment variables
+const SOCKET_URL = process.env.EXPO_PUBLIC_API_URL
+  ? process.env.EXPO_PUBLIC_API_URL.replace('/api', '')
+  : 'http://localhost:3000';
 
 export const socket: Socket = io(SOCKET_URL, {
     autoConnect: false,

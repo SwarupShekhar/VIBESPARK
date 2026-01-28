@@ -19,7 +19,10 @@
     "ios": {
       "supportsTablet": true,
       "bitcode": false,
-      "bundleIdentifier": "com.anonymous.vibespark"
+      "bundleIdentifier": "com.anonymous.vibespark",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -35,7 +38,8 @@
         "android.permission.SYSTEM_ALERT_WINDOW",
         "android.permission.WAKE_LOCK",
         "android.permission.BLUETOOTH"
-      ]
+      ],
+      "package": "com.anonymous.vibespark"
     },
     "web": {
       "favicon": "./assets/images/favicon.png"
@@ -50,6 +54,12 @@
           "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "936ef4d1-8ebb-4ff8-a150-c3a409671513"
+      }
+    }
   }
 }

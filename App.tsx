@@ -6,7 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect, useState } from 'react';
 import { StatusBar, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { AnamChatScreen } from './components/AnamChatScreen';
+import { AnamCallScreen } from './components/AnamCallScreen';
 import { BottomNavBar } from './components/BottomNavBar';
 import { ConnectLoader } from './components/ConnectLoader';
 import { DiscoverScreen } from './components/DiscoverScreen';
@@ -185,7 +185,7 @@ export default function App() {
         return <DiscoverScreen onNavigate={navigateToScreen} currentUser={user} />;
 
       case 'anam-chat':
-        return <AnamChatScreen onNavigate={navigateToScreen} />;
+        return <AnamCallScreen onNavigate={navigateToScreen} />;
 
       default:
         return <HomeScreen onNavigate={navigateToScreen} streakCount={streakCount} onSignOut={handleSignOut} />;

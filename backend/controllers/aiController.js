@@ -19,10 +19,10 @@ async function chatWithAnam(req, res) {
         console.log("🎤 Received voice chat request");
 
         // Validate API keys first
-        if (!DEEPGRAM_API_KEY || !GEMINI_API_KEY || !ELEVENLABS_API_KEY) {
-            console.error("❌ Missing API keys. Check environment variables.");
+        if (!DEEPGRAM_API_KEY || !GEMINI_API_KEY) {
+            console.error("❌ Missing required API keys. Check environment variables.");
             return res.status(500).json({
-                error: 'Server configuration error. Please add API keys to Railway environment.'
+                error: 'Server configuration error. Please add required API keys to environment.'
             });
         }
 

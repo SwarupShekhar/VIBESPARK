@@ -103,3 +103,37 @@ exports.getUserProfile = async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
+
+// Update User Profile (vibes and story fields)
+exports.updateUserProfile = async (req, res) => {
+    try {
+        const { vibes, story } = req.body;
+
+        const updates = {};
+
+        // For now, map primary vibe into existing single 'vibe' field
+        if (Array.isArray(vibes) && vibes.length > 0) {
+            updates.vibe = vibes[0];
+        }
+
+        // If you extend the User schema later, you can persist `story` structure too.
+
+        const user = await User.findByIdAndUpdate(
+            req.user.userId,
+            { $set: updates },
+            { new: true, runValidators: true }
+        ).select('-password');
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        res.json({
+            message: 'Profile updated successfully',
+            user
+        });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ message: 'Server error' });
+    }
+};

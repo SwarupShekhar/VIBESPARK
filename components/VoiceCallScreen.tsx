@@ -1,8 +1,10 @@
+import { ConnectionState, Room, RoomEvent } from 'livekit-client';
 import { Mic, MicOff, PhoneOff, Volume2, VolumeX } from 'lucide-react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { io } from 'socket.io-client';
 import { COLORS } from '../constants/theme';
+import { getLiveKitToken } from '../services/api';
+import { liveKitService } from '../services/livekitService';
 
 interface VoiceCallScreenProps {
     onNavigate: (screen: string) => void;
@@ -16,52 +18,69 @@ export const VoiceCallScreen: React.FC<VoiceCallScreenProps> = ({ onNavigate, on
     const [isMuted, setIsMuted] = useState(false);
     const [isSpeakerOn, setIsSpeakerOn] = useState(true);
     const [isConnected, setIsConnected] = useState(false);
+    const [callStatus, setCallStatus] = useState('Connecting...');
 
     const currentUserId = currentUser?.id || 'anon';
     const roomId = matchedUser ? [currentUserId, matchedUser.id || 'unknown'].sort().join('-') : 'test-room';
+    const roomRef = useRef<Room | null>(null);
 
     useEffect(() => {
-        // Connect to Socket.IO Server for signaling
-        const SOCKET_URL = process.env.EXPO_PUBLIC_API_URL
-            ? process.env.EXPO_PUBLIC_API_URL.replace('/api', '')
-            : 'http://localhost:3000';
+        // Initialize LiveKit connection
+        const initializeCall = async () => {
+            try {
+                setCallStatus('Setting up call...');
+                
+                // Get LiveKit token from backend
+                const tokenResponse = await getLiveKitToken(roomId, currentUser?.name || 'Anonymous');
+                const { token } = tokenResponse;
 
-        const socket = io(SOCKET_URL);
+                // Connect to LiveKit room
+                const room = await liveKitService.connectToRoom(
+                    token,
+                    process.env.EXPO_PUBLIC_LIVEKIT_URL || 'wss://ssengst-174tfe9o.livekit.cloud',
+                    (participant) => {
+                        console.log('Participant connected:', participant.identity);
+                        setCallStatus('Connected');
+                        setIsConnected(true);
+                    },
+                    (participant) => {
+                        console.log('Participant disconnected:', participant.identity);
+                        setCallStatus('Participant left');
+                    },
+                    (publication, participant) => {
+                        console.log('Track subscribed:', publication.kind);
+                    }
+                );
 
-        socket.on('connect', () => {
-            console.log("Connected to signaling server");
-            setIsConnected(true);
-            socket.emit('join_room', roomId);
-        });
+                roomRef.current = room;
 
-        socket.on('user_joined', (userId) => {
-            console.log("User joined room:", userId);
-        });
+                // Create and publish local audio track
+                const audioTrack = await liveKitService.createLocalAudioTrack();
+                if (audioTrack) {
+                    await liveKitService.publishAudioTrack();
+                }
 
-        socket.on('offer', (signal) => {
-            console.log("Received Offer:", signal);
-            socket.emit('answer', { toRoom: roomId, signal: { type: 'answer', sdp: 'mock-answer' } });
-        });
+                // Set up room event listeners
+                room.on(RoomEvent.ConnectionStateChanged, (state) => {
+                    console.log('Connection state changed:', state);
+                    setIsConnected(state === ConnectionState.Connected);
+                    
+                    if (state === ConnectionState.Disconnected) {
+                        setCallStatus('Call ended');
+                        handleEndCall();
+                    }
+                });
 
-        socket.on('answer', (signal) => {
-            console.log("Received Answer:", signal);
-        });
-
-        socket.on('ice-candidate', (candidate) => {
-            console.log("Received ICE Candidate:", candidate);
-        });
-
-        socket.on('disconnect', () => {
-            setIsConnected(false);
-        });
-
-        return () => {
-            socket.disconnect();
-            console.log("Disconnected from signaling server");
+            } catch (error) {
+                console.error('Error initializing LiveKit call:', error);
+                setCallStatus('Connection failed');
+                setIsConnected(false);
+            }
         };
-    }, [roomId]);
 
-    useEffect(() => {
+        initializeCall();
+
+        // Timer for 3-minute call
         const timer = setInterval(() => {
             setSeconds(prev => {
                 if (prev <= 1) {
@@ -73,12 +92,34 @@ export const VoiceCallScreen: React.FC<VoiceCallScreenProps> = ({ onNavigate, on
             });
         }, 1000);
 
-        return () => clearInterval(timer);
-    }, []);
+        return () => {
+            clearInterval(timer);
+            // Cleanup LiveKit connection
+            if (roomRef.current) {
+                roomRef.current.disconnect();
+            }
+            liveKitService.disconnect();
+        };
+    }, [roomId]);
 
-    const handleEndCall = () => {
-        onCallEnd();
-        onNavigate('chat');
+    const handleEndCall = async () => {
+        try {
+            // Disconnect from LiveKit room
+            if (roomRef.current) {
+                roomRef.current.disconnect();
+            }
+            await liveKitService.disconnect();
+        } catch (error) {
+            console.error('Error disconnecting from LiveKit:', error);
+        } finally {
+            onCallEnd();
+            onNavigate('chat');
+        }
+    };
+
+    const toggleMute = async () => {
+        const newState = await liveKitService.toggleMute();
+        setIsMuted(newState);
     };
 
     const formatTime = (secs: number) => {
@@ -87,12 +128,21 @@ export const VoiceCallScreen: React.FC<VoiceCallScreenProps> = ({ onNavigate, on
         return `${mins}:${remainingSecs.toString().padStart(2, '0')}`;
     };
 
+    // Handle cleanup on unmount
+    useEffect(() => {
+        return () => {
+            if (roomRef.current) {
+                roomRef.current.disconnect();
+            }
+        };
+    }, []);
+
     return (
         <View style={styles.container}>
             <View style={styles.header}>
                 <Text style={styles.timer}>{formatTime(seconds)}</Text>
                 <Text style={styles.connectionStatus}>
-                    {isConnected ? '🟢 Connected' : '🔴 Connecting...'}
+                    {isConnected ? '🟢 Connected' : `🟡 ${callStatus}`}
                 </Text>
             </View>
 
@@ -105,7 +155,7 @@ export const VoiceCallScreen: React.FC<VoiceCallScreenProps> = ({ onNavigate, on
                 <Text style={styles.name}>
                     {matchedUser?.name || matchedUser?.email?.split('@')[0] || 'Unknown User'}
                 </Text>
-                <Text style={styles.status}>Voice Call Active</Text>
+                <Text style={styles.status}>{callStatus}</Text>
 
                 {matchedUser?.vibes && Array.isArray(matchedUser.vibes) && (
                     <View style={styles.vibesContainer}>
@@ -129,7 +179,7 @@ export const VoiceCallScreen: React.FC<VoiceCallScreenProps> = ({ onNavigate, on
 
                 <TouchableOpacity
                     style={[styles.controlButton, isMuted && styles.controlButtonInactive]}
-                    onPress={() => setIsMuted(!isMuted)}
+                    onPress={toggleMute}
                 >
                     {/* @ts-ignore */}
                     {isMuted ? <MicOff size={24} color="#fff" /> : <Mic size={24} color="#fff" />}

@@ -22,10 +22,10 @@ exports.createAnamSession = async (req, res) => {
             {
                 personaConfig: {
                     name: 'VIBE-buddy',
-                    avatarId: AVATAR_ID,
+                    avatarId: '6dbc1e47-7768-403e-878a-94d7fcc3677b', // VIBE-buddy avatar ID
                     voiceId: '6bfbe25a-979d-40f3-a92b-5394170af54b', // Default Anam voice
                     llmId: '0934d97d-0c3a-4f33-91b0-5e136a0ef466', // Anam's LLM
-                    systemPrompt: `You are VIBE-BUDDY, an empathetic AI friend. Say exactly: "${aiResponse}"`,
+                    systemPrompt: `You are VIBE-buddy, the empathetic and witty companion for Vibespark users. Keep responses natural and conversational. Say: "${aiResponse}"`,
                 },
             },
             {

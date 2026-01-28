@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import api from '../services/api';
 
 interface ProfileCreationScreenProps {
     onNavigate: (screen: string) => void;
@@ -42,16 +43,21 @@ export const ProfileCreationScreen: React.FC<ProfileCreationScreenProps> = ({ on
 
         setLoading(true);
         try {
-            // BACKEND MIGRATION TODO: POST /api/users/profile
-            console.log("Saving profile (mock)...", { selectedVibes, storyAnswers });
+            // Persist profile to backend
+            await api.put('/users/profile', {
+                vibes: selectedVibes,
+                story: storyAnswers,
+            });
 
-            setTimeout(() => {
-                onSaveProfile();
-            }, 1000);
-
+            onSaveProfile();
         } catch (error: any) {
             console.error("Error saving profile:", error);
-            Alert.alert('Error', 'Failed to save profile: ' + error.message);
+            const message =
+                error.response?.data?.message ||
+                error.response?.data?.error ||
+                error.message ||
+                'Failed to save profile';
+            Alert.alert('Error', message);
         } finally {
             setLoading(false);
         }

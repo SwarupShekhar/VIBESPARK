@@ -54,6 +54,16 @@ export const createReel = async (reelData: { videoUrl: string; caption?: string 
     return response.data;
 };
 
+export const getLiveKitToken = async (roomName: string, userName: string) => {
+    const response = await api.post('/livekit/token', { roomName, userName });
+    return response.data;
+};
+
+export const getAnamSessionToken = async (aiResponse: string) => {
+    const response = await api.post('/anam/session', { aiResponse });
+    return response.data;
+};
+
 export const logout = async () => {
     await AsyncStorage.removeItem('authToken');
 };
